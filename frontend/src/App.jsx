@@ -1,10 +1,31 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import axios from "axios"
+import "./App.css"
 
 function App() {
   const [resume, setResume] = useState("")
   const [jobdesc, setJobDesc] = useState("")
   const [score, setScore] = useState(null)
+  
+  // Theme state
+  const [theme, setTheme] = useState("dark")
+
+  useEffect(() => {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    if (prefersDark) {
+      setTheme("dark")
+    } else {
+      setTheme("light")
+    }
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"))
+  }
 
   const analyzeResume = async () => {
     const formData = new FormData() // FormData is kind of object used to store data in form format
@@ -14,82 +35,54 @@ function App() {
     setScore(response.data.match_score)
   }
 
-  return (
-    <div style={{ padding: "40px", maxWidth: "900px", margin: "0 auto", fontFamily: "Arial, sans-serif" }}>
-      <h1 style={{ textAlign: "center", color: "#333" }}>Resume Analyzer</h1>
+  const getScoreColor = () => {
+    if (score === null) return "var(--text-color)"
+    if (score >= 70) return "var(--success-color)"
+    if (score >= 50) return "var(--warning-color)"
+    return "var(--danger-color)"
+  }
 
-      <div style={{ marginBottom: "20px" }}>
-        <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>Job Description:</label>
+  return (
+    <div className="app-container">
+      <div className="header">
+        <h1>Resume Analyzer</h1>
+        <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
+          {theme === "light" ? "🌙" : "☀️"}
+        </button>
+      </div>
+
+      <div className="input-group">
+        <label>Job Description</label>
         <textarea
           value={jobdesc}
           onChange={(e) => setJobDesc(e.target.value)}
           placeholder="Paste the job description here..."
-          style={{
-            width: "100%",
-            height: "150px",
-            padding: "10px",
-            fontSize: "14px",
-            border: "1px solid #ddd",
-            borderRadius: "5px",
-            fontFamily: "Arial"
-          }}
         />
       </div>
 
-      <div style={{ marginBottom: "20px" }}>
-        <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>Resume:</label>
+      <div className="input-group">
+        <label>Resume</label>
         <textarea
           value={resume}
           onChange={(e) => setResume(e.target.value)}
           placeholder="Paste your resume here..."
-          style={{
-            width: "100%",
-            height: "150px",
-            padding: "10px",
-            fontSize: "14px",
-            border: "1px solid #ddd",
-            borderRadius: "5px",
-            fontFamily: "Arial"
-          }}
         />
       </div>
 
       <button
+        className="analyze-btn"
         onClick={analyzeResume}
-        style={{
-          width: "100%",
-          padding: "12px",
-          fontSize: "16px",
-          fontWeight: "bold",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginBottom: "30px"
-        }}
       >
         Analyze Resume
       </button>
 
       {score !== null && (
-        <div style={{
-          padding: "30px",
-          backgroundColor: "#f0f8ff",
-          border: "2px solid #4CAF50",
-          borderRadius: "10px",
-          textAlign: "center"
-        }}>
-          <h2 style={{ color: "#333", marginBottom: "10px" }}>Match Score</h2>
-          <div style={{
-            fontSize: "48px",
-            fontWeight: "bold",
-            color: score >= 70 ? "#4CAF50" : score >= 50 ? "#FF9800" : "#f44336",
-            marginBottom: "10px"
-          }}>
+        <div className="result-card">
+          <div className="result-title">Match Score</div>
+          <div className="score-display" style={{ color: getScoreColor() }}>
             {score}%
           </div>
-          <p style={{ color: "#666", fontSize: "14px" }}>
+          <p className="score-text" style={{ color: getScoreColor() }}>
             {score >= 70 ? "Great Match! 🎉" : score >= 50 ? "Good Match! 👍" : "Needs Improvement 💡"}
           </p>
         </div>
