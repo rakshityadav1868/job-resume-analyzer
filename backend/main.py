@@ -1,4 +1,5 @@
-from fastapi import FastAPI,UploadFile,File,Form
+from fastapi import FastAPI,UploadFile,Form
+from fastapi.middleware.cors import CORSMiddleware
 import nltk
 import re
 from  nltk.corpus import stopwords
@@ -11,6 +12,13 @@ nltk.download('wordnet') #used for lemmatizer
 
 app=FastAPI()
 
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=["*"],
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"]
+)
 def preprocess(text):
   text=text.lower()
 
@@ -46,4 +54,4 @@ async def analyze(resume_text: str=Form(...), job_description: str=Form(...)):
     vectors=vectorizer.fit_transform([cleaned_resume,cleaned_jobdesc])
     score=cosine_similarity(vectors[0],vectors[1]) # score 2d array aayega [[]] outside one is row and other is coloumn
     match_score=round(score[0][0]*100,2)
-    return {match_score}
+    return {"match_score": match_score}
