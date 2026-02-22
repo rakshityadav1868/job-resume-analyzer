@@ -1,4 +1,4 @@
-from fastapi import FastAPI,UploadFile,Form
+from fastapi import FastAPI,Form
 from fastapi.middleware.cors import CORSMiddleware
 import nltk
 import re
